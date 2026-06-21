@@ -131,7 +131,11 @@ em { font-style: italic; color: var(--clay); }
 .nav::before {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
   background: rgba(245, 243, 238, 0.72);
   border-bottom: 1px solid var(--line);
   z-index: -1;
