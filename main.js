@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -318,6 +318,27 @@ ipcMain.handle('claude:fetchLiveLimits', async (event, sessionKey) => {
   } catch (err) {
     console.error('Error fetching live limits:', err);
     return { success: false, error: `Connection failed: ${err.message}` };
+  }
+});
+
+// Show a native macOS notification (e.g. quota threshold alerts)
+ipcMain.handle('claude:notify', async (event, { title, body } = {}) => {
+  try {
+    if (!Notification.isSupported()) {
+      return { success: false, error: 'Notifications not supported on this system.' };
+    }
+    const notification = new Notification({ title: title || 'Claude Quota Widget', body: body || '' });
+    notification.on('click', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    });
+    notification.show();
+    return { success: true };
+  } catch (err) {
+    console.error('Error showing notification:', err);
+    return { success: false, error: err.message };
   }
 });
 

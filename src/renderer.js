@@ -2,8 +2,13 @@
 let appState = {
   activeView: 'dashboard', // 'dashboard' or 'settings'
   accounts: [],            // List of { id, label, sessionKey, quotaData: null, lastFetchTime: 0, status: 'offline' }
-  globalStatus: 'offline'  // 'offline', 'syncing', 'online', 'warning', 'error'
+  globalStatus: 'offline', // 'offline', 'syncing', 'online', 'warning', 'error'
+  refreshMinutes: 15,      // Background auto-refresh interval in minutes
+  alertThreshold: 80       // Session usage % that triggers a notification (0 = off)
 };
+
+const DEFAULT_REFRESH_MINUTES = 15;
+const DEFAULT_ALERT_THRESHOLD = 80;
 
 let autoRefreshIntervalId = null;
 
@@ -15,14 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
   setupIPCListeners();
 });
 
-// Setup automatic background refresh every 15 minutes
+// Setup automatic background refresh on the configured interval
 function startAutoRefresh() {
   if (autoRefreshIntervalId) {
     clearInterval(autoRefreshIntervalId);
   }
+  const minutes = appState.refreshMinutes || DEFAULT_REFRESH_MINUTES;
   autoRefreshIntervalId = setInterval(() => {
     refreshAllAccounts();
-  }, 15 * 60 * 1000); // 15 minutes
+  }, minutes * 60 * 1000);
 }
 
 // Setup real-time CLI and window visibility listeners
@@ -46,6 +52,7 @@ function setupIPCListeners() {
 // Setup Navigation & Actions
 function setupNavigation() {
   const toggleBtn = document.getElementById('btn-toggle-settings');
+  const homeBtn = document.getElementById('btn-go-home');
   const dashEmptyBtn = document.getElementById('btn-go-to-settings');
   const refreshAllBtn = document.getElementById('btn-refresh-all');
   
@@ -72,6 +79,12 @@ function setupNavigation() {
     }
   });
 
+  if (homeBtn) {
+    homeBtn.addEventListener('click', () => {
+      showView('dashboard');
+    });
+  }
+
   if (dashEmptyBtn) {
     dashEmptyBtn.addEventListener('click', () => {
       showView('settings');
@@ -91,10 +104,19 @@ async function loadAllData() {
   try {
     const trackerSettings = await window.claudeAPI.getTrackerSettings();
     appState.accounts = trackerSettings.accounts || [];
-    
+
     if (!Array.isArray(appState.accounts)) {
       appState.accounts = [];
     }
+
+    if (trackerSettings.refreshMinutes) {
+      appState.refreshMinutes = trackerSettings.refreshMinutes;
+    }
+    if (trackerSettings.alertThreshold !== undefined) {
+      appState.alertThreshold = trackerSettings.alertThreshold;
+    }
+    syncRefreshIntervalSelect();
+    syncAlertThresholdSelect();
 
     renderAccountsGrid();
     renderSettingsAccountsList();
@@ -154,6 +176,40 @@ async function refreshAllAccounts() {
   renderAccountsGrid();
 }
 
+// Extract the current 5-hour session utilization (%) from a quota payload
+function getSessionUtilization(quotaData) {
+  const q = quotaData || {};
+  const fh = q.five_hour || q.fiveHour;
+  if (fh && fh.utilization !== undefined) {
+    return Math.round(fh.utilization);
+  }
+  return 0;
+}
+
+// Fire a native macOS notification the first time session usage crosses the
+// threshold, and arm it again only after usage drops back below the threshold.
+function checkSessionUsageAlert(account) {
+  const threshold = appState.alertThreshold;
+  if (!threshold || threshold <= 0) return; // Notifications disabled
+
+  const sessionPct = getSessionUtilization(account.quotaData);
+
+  if (sessionPct >= threshold) {
+    if (!account.alertedHighUsage) {
+      account.alertedHighUsage = true;
+      if (window.claudeAPI && typeof window.claudeAPI.notify === 'function') {
+        window.claudeAPI.notify({
+          title: `${account.label} — ${sessionPct}% of session used`,
+          body: `Your current 5-hour session has crossed ${threshold}% usage.`
+        });
+      }
+    }
+  } else {
+    // Reset once the session window resets / usage falls back down
+    account.alertedHighUsage = false;
+  }
+}
+
 // Fetch live limits for a single account
 async function fetchAccountQuota(account) {
   try {
@@ -162,6 +218,7 @@ async function fetchAccountQuota(account) {
       account.quotaData = result.data;
       account.lastFetchTime = Date.now();
       account.status = 'online';
+      checkSessionUsageAlert(account);
     } else {
       account.quotaData = null;
       account.status = 'error';
@@ -177,6 +234,32 @@ async function fetchAccountQuota(account) {
 
 // Setup Account Form submission & Key management
 function setupFormHandlers() {
+  const refreshSelect = document.getElementById('refresh-interval');
+  if (refreshSelect) {
+    refreshSelect.addEventListener('change', async (e) => {
+      const minutes = parseInt(e.target.value, 10);
+      if (!minutes || minutes <= 0) return;
+      appState.refreshMinutes = minutes;
+      await saveAccountsToDisk();
+      startAutoRefresh(); // Restart the timer with the new interval
+    });
+  }
+
+  const alertSelect = document.getElementById('alert-threshold');
+  if (alertSelect) {
+    alertSelect.addEventListener('change', async (e) => {
+      const threshold = parseInt(e.target.value, 10);
+      appState.alertThreshold = isNaN(threshold) ? 0 : threshold;
+      // Re-arm alerts so a new threshold can fire against current usage
+      appState.accounts.forEach(acc => { acc.alertedHighUsage = false; });
+      await saveAccountsToDisk();
+      // Evaluate immediately against the latest known usage
+      appState.accounts.forEach(acc => {
+        if (acc.status === 'online') checkSessionUsageAlert(acc);
+      });
+    });
+  }
+
   const form = document.getElementById('add-account-form');
   if (form) {
     form.addEventListener('submit', async (e) => {
@@ -229,8 +312,24 @@ async function saveAccountsToDisk() {
     sessionKey: acc.sessionKey
   }));
   
-  const result = await window.claudeAPI.saveTrackerSettings({ accounts: accountsToSave });
+  const result = await window.claudeAPI.saveTrackerSettings({
+    accounts: accountsToSave,
+    refreshMinutes: appState.refreshMinutes,
+    alertThreshold: appState.alertThreshold
+  });
   return result && result.success;
+}
+
+// Reflect the current interval in the settings dropdown
+function syncRefreshIntervalSelect() {
+  const select = document.getElementById('refresh-interval');
+  if (select) select.value = String(appState.refreshMinutes);
+}
+
+// Reflect the current alert threshold in the settings dropdown
+function syncAlertThresholdSelect() {
+  const select = document.getElementById('alert-threshold');
+  if (select) select.value = String(appState.alertThreshold);
 }
 
 // Render quota cards on dashboard
@@ -307,14 +406,13 @@ function renderAccountsGrid() {
     } else {
       const q = acc.quotaData || {};
       
-      let sessionPct = 0;
+      let sessionPct = getSessionUtilization(q);
       let weeklyPct = 0;
       let sessionResetsAt = null;
       let weeklyResetsAt = null;
 
       if (q.five_hour || q.fiveHour) {
         const fh = q.five_hour || q.fiveHour;
-        sessionPct = fh.utilization !== undefined ? Math.round(fh.utilization) : 0;
         sessionResetsAt = fh.resets_at || fh.resetsAt;
       }
       if (q.seven_day || q.sevenDay) {
@@ -358,12 +456,16 @@ function renderAccountsGrid() {
   });
 }
 
+// ID of the account currently being edited inline, or null
+let editingAccountId = null;
+
 // Render accounts in settings list
 function renderSettingsAccountsList() {
   const container = document.getElementById('accounts-settings-list');
   if (!container) return;
 
   if (appState.accounts.length === 0) {
+    editingAccountId = null;
     container.innerHTML = `<div style="color: var(--text-dimmed); font-size: 12px; text-align: center; padding: 15px 0;">No accounts added yet.</div>`;
     return;
   }
@@ -372,46 +474,165 @@ function renderSettingsAccountsList() {
   appState.accounts.forEach(acc => {
     const row = document.createElement('div');
     row.className = 'account-settings-row';
-    
-    const info = document.createElement('div');
-    info.className = 'account-settings-info';
-    
-    const name = document.createElement('span');
-    name.className = 'account-settings-label';
-    name.textContent = acc.label;
-    
-    const mask = document.createElement('span');
-    mask.className = 'account-settings-mask';
-    const key = acc.sessionKey || '';
-    const maskedKey = key.length > 20 
-      ? key.substring(0, 12) + '...' + key.substring(key.length - 6)
-      : '••••••••••••';
-    mask.textContent = maskedKey;
-    
-    info.appendChild(name);
-    info.appendChild(mask);
-    
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn btn-danger btn-action';
-    deleteBtn.textContent = 'Remove';
-    deleteBtn.addEventListener('click', async () => {
-      if (confirm(`Remove account "${acc.label}"?`)) {
-        appState.accounts = appState.accounts.filter(a => a.id !== acc.id);
-        const success = await saveAccountsToDisk();
-        if (success) {
-          renderSettingsAccountsList();
-          renderAccountsGrid();
-          updateGlobalStatus();
-        } else {
-          alert('Failed to remove account.');
-        }
-      }
-    });
 
-    row.appendChild(info);
-    row.appendChild(deleteBtn);
+    if (editingAccountId === acc.id) {
+      row.classList.add('editing');
+      buildAccountEditRow(row, acc);
+    } else {
+      buildAccountViewRow(row, acc);
+    }
+
     container.appendChild(row);
   });
+}
+
+// Display mode: label + masked key, with Edit and Remove actions
+function buildAccountViewRow(row, acc) {
+  const info = document.createElement('div');
+  info.className = 'account-settings-info';
+
+  const name = document.createElement('span');
+  name.className = 'account-settings-label';
+  name.textContent = acc.label;
+
+  const mask = document.createElement('span');
+  mask.className = 'account-settings-mask';
+  const key = acc.sessionKey || '';
+  mask.textContent = key.length > 20
+    ? key.substring(0, 12) + '...' + key.substring(key.length - 6)
+    : '••••••••••••';
+
+  info.appendChild(name);
+  info.appendChild(mask);
+
+  const actions = document.createElement('div');
+  actions.className = 'account-settings-actions';
+
+  const editBtn = document.createElement('button');
+  editBtn.className = 'btn btn-secondary btn-action';
+  editBtn.textContent = 'Edit';
+  editBtn.addEventListener('click', () => {
+    editingAccountId = acc.id;
+    renderSettingsAccountsList();
+  });
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'btn btn-danger btn-action';
+  deleteBtn.textContent = 'Remove';
+  deleteBtn.addEventListener('click', async () => {
+    if (confirm(`Remove account "${acc.label}"?`)) {
+      appState.accounts = appState.accounts.filter(a => a.id !== acc.id);
+      const success = await saveAccountsToDisk();
+      if (success) {
+        if (editingAccountId === acc.id) editingAccountId = null;
+        renderSettingsAccountsList();
+        renderAccountsGrid();
+        updateGlobalStatus();
+      } else {
+        alert('Failed to remove account.');
+      }
+    }
+  });
+
+  actions.appendChild(editBtn);
+  actions.appendChild(deleteBtn);
+
+  row.appendChild(info);
+  row.appendChild(actions);
+}
+
+// Edit mode: editable label + session key inputs, with Save and Cancel
+function buildAccountEditRow(row, acc) {
+  const form = document.createElement('div');
+  form.className = 'account-settings-edit';
+
+  const labelGroup = document.createElement('div');
+  labelGroup.className = 'form-group';
+  const labelLabel = document.createElement('label');
+  labelLabel.textContent = 'Account Label';
+  const labelInput = document.createElement('input');
+  labelInput.type = 'text';
+  labelInput.value = acc.label || '';
+  labelInput.placeholder = 'e.g. Personal, Work, Client A';
+  labelGroup.appendChild(labelLabel);
+  labelGroup.appendChild(labelInput);
+
+  const keyGroup = document.createElement('div');
+  keyGroup.className = 'form-group';
+  const keyLabel = document.createElement('label');
+  keyLabel.textContent = 'Session Key (sessionKey)';
+  const keyInput = document.createElement('input');
+  keyInput.type = 'password';
+  keyInput.value = acc.sessionKey || '';
+  keyInput.placeholder = 'Paste sk-ant-sid02-...';
+  const keyHelp = document.createElement('span');
+  keyHelp.className = 'field-help';
+  keyHelp.textContent = 'Leave unchanged to keep the existing key.';
+  keyGroup.appendChild(keyLabel);
+  keyGroup.appendChild(keyInput);
+  keyGroup.appendChild(keyHelp);
+
+  const actions = document.createElement('div');
+  actions.className = 'account-settings-actions';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn btn-primary btn-action';
+  saveBtn.textContent = 'Save';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn btn-secondary btn-action';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', () => {
+    editingAccountId = null;
+    renderSettingsAccountsList();
+  });
+
+  const commitEdit = async () => {
+    const newLabel = labelInput.value.trim();
+    const newKey = keyInput.value.trim();
+    if (!newLabel || !newKey) {
+      alert('Both label and session key are required.');
+      return;
+    }
+
+    const keyChanged = newKey !== acc.sessionKey;
+    acc.label = newLabel;
+    acc.sessionKey = newKey;
+
+    const success = await saveAccountsToDisk();
+    if (!success) {
+      alert('Failed to save account.');
+      return;
+    }
+
+    editingAccountId = null;
+
+    // Re-validate against the server if the key changed
+    if (keyChanged) {
+      acc.status = 'syncing';
+    }
+    renderSettingsAccountsList();
+    renderAccountsGrid();
+
+    if (keyChanged) {
+      await fetchAccountQuota(acc);
+      renderAccountsGrid();
+    }
+    updateGlobalStatus();
+  };
+
+  saveBtn.addEventListener('click', commitEdit);
+  labelInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') commitEdit(); });
+  keyInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') commitEdit(); });
+
+  actions.appendChild(saveBtn);
+  actions.appendChild(cancelBtn);
+
+  form.appendChild(labelGroup);
+  form.appendChild(keyGroup);
+  form.appendChild(actions);
+
+  row.appendChild(form);
 }
 
 // Update card status dot instantly

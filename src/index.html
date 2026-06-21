@@ -56,6 +56,9 @@
         <span>Claude Quotas</span>
       </div>
       <div class="header-actions">
+        <button id="btn-go-home" class="btn-icon" title="Home">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/></svg>
+        </button>
         <button id="btn-refresh-all" class="btn-icon" title="Refresh All Accounts">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         </button>
@@ -94,6 +97,40 @@
           </div>
           <div id="accounts-settings-list" class="accounts-settings-list">
             <!-- Dynamically populated list of account names + delete buttons -->
+          </div>
+        </div>
+
+        <div class="settings-card mt-15">
+          <h3>Auto-Refresh</h3>
+          <div class="form-group">
+            <label for="refresh-interval">Background sync interval</label>
+            <select id="refresh-interval">
+              <option value="5">Every 5 minutes</option>
+              <option value="10">Every 10 minutes</option>
+              <option value="15">Every 15 minutes</option>
+              <option value="30">Every 30 minutes</option>
+              <option value="60">Every hour</option>
+            </select>
+            <span class="field-help">Quotas also refresh instantly whenever you open the widget.</span>
+          </div>
+        </div>
+
+        <div class="settings-card mt-15">
+          <h3>Notifications</h3>
+          <div class="form-group">
+            <label for="alert-threshold">Alert when session usage reaches</label>
+            <select id="alert-threshold">
+              <option value="0">Off</option>
+              <option value="50">50%</option>
+              <option value="60">60%</option>
+              <option value="70">70%</option>
+              <option value="75">75%</option>
+              <option value="80">80%</option>
+              <option value="85">85%</option>
+              <option value="90">90%</option>
+              <option value="95">95%</option>
+            </select>
+            <span class="field-help">Sends a macOS notification the first time your 5-hour session crosses this level.</span>
           </div>
         </div>
 

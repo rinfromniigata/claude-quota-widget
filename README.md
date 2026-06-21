@@ -13,6 +13,9 @@ A beautiful, lightweight, and modern macOS utility status bar widget built with 
 - **Mac Menu Bar Widget:** Resides directly in the top status bar. Left-clicking the icon instantly toggles the compact window; right-clicking opens a context menu.
 - **Minimal macOS Aesthetic:** Designed using modern glassmorphism, responsive status pulsing, and Outfit/Inter typefaces matching native Apple utility tools.
 - **Multi-Account Quota Tracking:** Add and track multiple Claude accounts (e.g., *Personal*, *Work*, *Enterprise*) with custom labels.
+- **Inline Account Editing:** Update an account's label or rotate its expired `sessionKey` directly from the settings list — no need to remove and re-add. Changing the key automatically re-validates the account against Anthropic.
+- **Configurable Auto-Refresh:** Choose how often quotas sync in the background (every 5, 10, 15, 30, or 60 minutes) from the settings panel. Quotas also refresh instantly whenever you open the widget.
+- **Usage Alerts:** Get a native macOS notification the first time an account's 5-hour session crosses a threshold you pick (50%–95%), or switch alerts **Off** entirely. Each account alerts once per session window and re-arms automatically after the session resets.
 - **Live Syncing & Isolation:** Connects directly to Anthropic's private web endpoints. Accounts are updated concurrently; if a key expires or fails, the widget isolates the warning to that card without affecting other active accounts.
 - **Privacy First:** Your Claude session cookies are stored purely locally in your home directory profile under `~/.claude/tracker-settings.json` and are transmitted directly to Anthropic's endpoints.
 - **Retina-ready Tray Templates:** Employs pre-scaled monochrome status bar icons (`tray-iconTemplate.png` and `tray-iconTemplate@2x.png`) that automatically adapt to light and dark macOS menu bars.
@@ -35,6 +38,8 @@ To sync live usage metrics, you'll need the `sessionKey` cookie value for each a
 4. Expand **Cookies** in the left sidebar menu and click `https://claude.ai`.
 5. Find the row named `sessionKey` and copy its entire value (starting with `sk-ant-sid02-...`).
 6. Click the gear icon `[⚙]` in the widget header, type a label (e.g. *Personal*), paste the key, and click **Add Account**.
+
+> **Key expired?** `sessionKey` cookies are rotated periodically by Anthropic. When an account shows a *Sync Failed* warning, open the settings panel, click **Edit** on that account, and paste a fresh key — there's no need to remove and re-add it.
 
 ---
 

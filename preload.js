@@ -20,6 +20,9 @@ contextBridge.exposeInMainWorld('claudeAPI', {
   
   // Live Claude Server Limits
   fetchLiveLimits: (sessionKey) => ipcRenderer.invoke('claude:fetchLiveLimits', sessionKey),
+
+  // Native macOS notifications
+  notify: (payload) => ipcRenderer.invoke('claude:notify', payload),
   
   // Real-time synchronization event listener
   onDataChanged: (callback) => {
