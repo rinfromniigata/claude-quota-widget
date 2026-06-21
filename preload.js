@@ -26,5 +26,12 @@ contextBridge.exposeInMainWorld('claudeAPI', {
     const subscription = (event, data) => callback(data);
     ipcRenderer.on('claude:data-changed', subscription);
     return () => ipcRenderer.removeListener('claude:data-changed', subscription);
+  },
+  
+  // Window visibility show event listener
+  onWindowShown: (callback) => {
+    const subscription = () => callback();
+    ipcRenderer.on('claude:window-shown', subscription);
+    return () => ipcRenderer.removeListener('claude:window-shown', subscription);
   }
 });

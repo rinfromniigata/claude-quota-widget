@@ -38,6 +38,11 @@ function createWindow() {
     if (process.platform === 'darwin') {
       try { app.dock.show(); } catch (e) {}
     }
+    try {
+      mainWindow.webContents.send('claude:window-shown');
+    } catch (err) {
+      console.error('Error sending window-shown event:', err);
+    }
   });
 
   mainWindow.on('hide', () => {

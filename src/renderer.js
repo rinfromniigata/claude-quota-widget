@@ -15,23 +15,31 @@ document.addEventListener('DOMContentLoaded', () => {
   setupIPCListeners();
 });
 
-// Setup automatic background refresh every 10 minutes
+// Setup automatic background refresh every 15 minutes
 function startAutoRefresh() {
   if (autoRefreshIntervalId) {
     clearInterval(autoRefreshIntervalId);
   }
   autoRefreshIntervalId = setInterval(() => {
     refreshAllAccounts();
-  }, 10 * 60 * 1000); // 10 minutes
+  }, 15 * 60 * 1000); // 15 minutes
 }
 
-// Setup real-time CLI data listeners
+// Setup real-time CLI and window visibility listeners
 function setupIPCListeners() {
-  if (window.claudeAPI && typeof window.claudeAPI.onDataChanged === 'function') {
-    window.claudeAPI.onDataChanged(() => {
-      console.log('Local Claude Code data changed. Triggering sync...');
-      refreshAllAccounts();
-    });
+  if (window.claudeAPI) {
+    if (typeof window.claudeAPI.onDataChanged === 'function') {
+      window.claudeAPI.onDataChanged(() => {
+        console.log('Local Claude Code data changed. Triggering sync...');
+        refreshAllAccounts();
+      });
+    }
+    if (typeof window.claudeAPI.onWindowShown === 'function') {
+      window.claudeAPI.onWindowShown(() => {
+        console.log('Widget window shown. Triggering foreground sync...');
+        refreshAllAccounts();
+      });
+    }
   }
 }
 
