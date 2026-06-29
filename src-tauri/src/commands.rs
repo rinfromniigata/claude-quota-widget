@@ -44,10 +44,9 @@ pub async fn fetch_live_limits(session_key: String) -> ApiResult<Value> {
     }
 }
 
-// Update the menu-bar status text shown next to the tray icon so the quota is
+// Update the status text shown next to the tray icon so the quota is
 // visible without opening the window. On macOS this renders as a title in the
-// status bar; on other platforms it falls back to the tooltip (hover) since
-// inline status-bar text is macOS-only.
+// status bar; on Windows this shows as text on the tray icon.
 #[tauri::command]
 pub fn set_tray_title(app: AppHandle, title: String) -> ApiResult<()> {
     let Some(tray) = app.tray_by_id("main-tray") else {
@@ -55,15 +54,8 @@ pub fn set_tray_title(app: AppHandle, title: String) -> ApiResult<()> {
     };
     let value = if title.is_empty() { None } else { Some(title.as_str()) };
 
-    #[cfg(target_os = "macos")]
-    {
-        if let Err(e) = tray.set_title(value) {
-            return ApiResult::fail(e.to_string());
-        }
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        let _ = tray.set_tooltip(value);
+    if let Err(e) = tray.set_title(value) {
+        return ApiResult::fail(e.to_string());
     }
 
     ApiResult::ok(())

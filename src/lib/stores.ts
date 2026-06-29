@@ -281,21 +281,22 @@ export async function setLanguage(language: LangSetting): Promise<void> {
 
 // Recompute the aggregate status + last-sync time from current account states.
 // Called after any settle (full refresh, single refresh, add/remove/edit).
-// Build the compact menu-bar status text from the current online accounts.
-// One account → "5h 42% · 7d 78%"; multiple → "labelA 42% · labelB 13%".
+// Build the compact tray status text from the current online accounts.
+// Windows tray has limited space, so display only 5-hour session utilization.
+// One account → "42%"; multiple → "A:42% B:13%".
 function buildTrayTitle(list: Account[]): string {
   const online = list.filter((a) => a.status === "online" && a.quotaData);
   if (online.length === 0) return "";
   if (online.length === 1) {
     const q = online[0].quotaData;
-    return `5h ${getSessionUtilization(q)}% · 7d ${getWeeklyUtilization(q)}%`;
+    return `${getSessionUtilization(q)}%`;
   }
   return online
     .map((a) => {
-      const label = a.label.length > 6 ? a.label.slice(0, 6) : a.label;
-      return `${label} ${getSessionUtilization(a.quotaData)}%`;
+      const label = a.label.length > 3 ? a.label.slice(0, 3) : a.label;
+      return `${label}:${getSessionUtilization(a.quotaData)}%`;
     })
-    .join(" · ");
+    .join(" ");
 }
 
 export function updateGlobalStatusAfter(): void {
