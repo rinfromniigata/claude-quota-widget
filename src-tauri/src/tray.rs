@@ -2,7 +2,7 @@ use tauri::{
     image::Image,
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle,
+    AppHandle, Manager,
 };
 
 // Build the menu-bar tray: left-click toggles the window, right-click opens a
@@ -35,11 +35,24 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
             }
         });
 
-    // Template image adapts automatically to light/dark menu bars on macOS.
-    if let Ok(icon) = Image::from_bytes(include_bytes!("../icons/tray-iconTemplate.png")) {
-        builder = builder.icon(icon).icon_as_template(true);
+    // Prefer the monochrome template icon (auto light/dark on macOS); fall back
+    // to the colored app icon so the tray is always visible if it fails to load.
+    match Image::from_bytes(include_bytes!("../icons/tray-iconTemplate.png")) {
+        Ok(icon) => {
+            builder = builder.icon(icon).icon_as_template(true);
+        }
+        Err(e) => {
+            eprintln!("[tray] template icon failed to load ({e}); using app icon");
+            if let Some(icon) = app.default_window_icon().cloned() {
+                builder = builder.icon(icon);
+            }
+        }
     }
 
-    builder.build(app)?;
+    let tray = builder.build(app)?;
+
+    // Keep the tray alive for the app's lifetime — dropping the returned handle
+    // removes the icon from the menu bar on macOS.
+    app.manage(tray);
     Ok(())
 }
