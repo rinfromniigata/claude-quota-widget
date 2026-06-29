@@ -2,6 +2,7 @@ mod commands;
 mod quota;
 mod settings;
 mod tray;
+mod tray_meter;
 mod watcher;
 mod window;
 
@@ -16,7 +17,7 @@ pub fn run() {
             commands::save_tracker_settings,
             commands::fetch_live_limits,
             commands::notify,
-            commands::set_tray_title,
+            commands::update_tray,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

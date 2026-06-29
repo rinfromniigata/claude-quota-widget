@@ -31,9 +31,11 @@ export function notify(title: string, body: string): Promise<ApiResult<null>> {
   return invoke("notify", { title, body });
 }
 
-// Update the menu-bar status text next to the tray icon (empty string clears it).
-export function setTrayTitle(title: string): Promise<ApiResult<null>> {
-  return invoke("set_tray_title", { title });
+// Update the tray: macOS sets menu-bar title; Windows/Linux renders a meter icon
+// and sets the tooltip. `sessionPct` (0–100) drives the meter color/fill.
+// Pass empty title + 0 to clear back to the original icon.
+export function updateTray(title: string, sessionPct: number): Promise<ApiResult<null>> {
+  return invoke("update_tray", { title, sessionPct });
 }
 
 // --- Event subscriptions (replaces onDataChanged / onWindowShown) ---

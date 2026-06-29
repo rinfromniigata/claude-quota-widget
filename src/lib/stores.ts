@@ -281,27 +281,33 @@ export async function setLanguage(language: LangSetting): Promise<void> {
 
 // Recompute the aggregate status + last-sync time from current account states.
 // Called after any settle (full refresh, single refresh, add/remove/edit).
-// Build the compact tray status text from the current online accounts.
-// Windows tray has limited space, so display only 5-hour session utilization.
-// One account → "42%"; multiple → "A:42% B:13%".
+// Build the tray status text (macOS menu-bar title / Windows tooltip).
+// One account → "5h 42% · 7d 78%"; multiple → "labelA 42% · labelB 13%".
 function buildTrayTitle(list: Account[]): string {
   const online = list.filter((a) => a.status === "online" && a.quotaData);
   if (online.length === 0) return "";
   if (online.length === 1) {
     const q = online[0].quotaData;
-    return `${getSessionUtilization(q)}%`;
+    return `5h ${getSessionUtilization(q)}% · 7d ${getWeeklyUtilization(q)}%`;
   }
   return online
     .map((a) => {
-      const label = a.label.length > 3 ? a.label.slice(0, 3) : a.label;
-      return `${label}:${getSessionUtilization(a.quotaData)}%`;
+      const label = a.label.length > 6 ? a.label.slice(0, 6) : a.label;
+      return `${label} ${getSessionUtilization(a.quotaData)}%`;
     })
-    .join(" ");
+    .join(" · ");
+}
+
+// Highest session utilization across all online accounts — drives the meter color.
+function worstSessionPct(list: Account[]): number {
+  const online = list.filter((a) => a.status === "online" && a.quotaData);
+  if (online.length === 0) return 0;
+  return Math.max(...online.map((a) => getSessionUtilization(a.quotaData)));
 }
 
 export function updateGlobalStatusAfter(): void {
   const list = get(accounts);
-  void api.setTrayTitle(buildTrayTitle(list));
+  void api.updateTray(buildTrayTitle(list), worstSessionPct(list));
   if (list.length === 0) {
     globalStatus.set("offline");
     lastSyncTime.set(0);

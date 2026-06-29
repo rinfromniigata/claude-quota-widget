@@ -44,18 +44,41 @@ pub async fn fetch_live_limits(session_key: String) -> ApiResult<Value> {
     }
 }
 
-// Update the status text shown next to the tray icon so the quota is
-// visible without opening the window. On macOS this renders as a title in the
-// status bar; on Windows this shows as text on the tray icon.
+// Update the tray to reflect current quota state.
+// macOS: set menu-bar title text next to the icon.
+// Windows/Linux: render a bar-meter icon (blue→orange→red→purple by usage)
+//   and set the tooltip to the same text for on-hover detail.
 #[tauri::command]
-pub fn set_tray_title(app: AppHandle, title: String) -> ApiResult<()> {
+pub fn update_tray(app: AppHandle, title: String, session_pct: f64) -> ApiResult<()> {
     let Some(tray) = app.tray_by_id("main-tray") else {
         return ApiResult::fail("tray not found");
     };
-    let value = if title.is_empty() { None } else { Some(title.as_str()) };
 
-    if let Err(e) = tray.set_title(value) {
-        return ApiResult::fail(e.to_string());
+    #[cfg(target_os = "macos")]
+    {
+        let value = if title.is_empty() { None } else { Some(title.as_str()) };
+        if let Err(e) = tray.set_title(value) {
+            return ApiResult::fail(e.to_string());
+        }
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        // Tooltip: same text format as macOS title for on-hover detail.
+        let tooltip = if title.is_empty() { None } else { Some(title.as_str()) };
+        let _ = tray.set_tooltip(tooltip);
+
+        // Icon: bar meter, or restore original icon when there is no data.
+        if title.is_empty() {
+            if let Ok(icon) = tauri::image::Image::from_bytes(
+                include_bytes!("../icons/tray-iconTemplate.png"),
+            ) {
+                let _ = tray.set_icon(Some(icon));
+            }
+        } else {
+            let icon = crate::tray_meter::render(session_pct as f32);
+            let _ = tray.set_icon(Some(icon));
+        }
     }
 
     ApiResult::ok(())
