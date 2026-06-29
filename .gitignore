@@ -9,3 +9,11 @@ out/
 package-lock.json
 
 roadmap/
+
+# Tauri / Rust
+src-tauri/target/
+src-tauri/gen/
+.cargo/
+
+# Bun
+bun.lockb

@@ -1,24 +1,26 @@
 # Claude Quota Widget 📊
 
-A beautiful, lightweight, and modern macOS utility status bar widget built with Electron. It resides in your macOS menu bar, allowing you to monitor rolling 5-hour session limits and weekly utilization quotas across multiple Anthropic **Claude.ai** accounts simultaneously.
+A lightweight, modern macOS menu-bar widget built with **Tauri 2.0 + Svelte**. It lives in your macOS status bar and lets you monitor rolling 5-hour session limits and weekly utilization quotas across multiple Anthropic **Claude.ai** accounts simultaneously. **Japanese / English bilingual UI** included.
 
-![macOS Status Bar Integration](https://img.shields.io/badge/Platform-macOS-orange?style=flat-square&logo=apple)
-![Electron](https://img.shields.io/badge/Electron-v31.0-blue?style=flat-square&logo=electron)
-![Vanilla JS/CSS](https://img.shields.io/badge/Frontend-HTML/CSS/JS-green?style=flat-square)
+![Platform](https://img.shields.io/badge/Platform-macOS-orange?style=flat-square&logo=apple)
+![Tauri](https://img.shields.io/badge/Tauri-2.0-24C8DB?style=flat-square&logo=tauri)
+![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?style=flat-square&logo=svelte)
+![Bun](https://img.shields.io/badge/Bun-runtime-000000?style=flat-square&logo=bun)
+
+> **v2.0 rewrite:** Previously an Electron app, now rebuilt on a Rust (Tauri) backend with a Svelte frontend, packaged/run with Bun. The result is a much smaller, faster native binary. Cross-platform builds (Windows/Linux) are in scope; macOS is the primary, fully supported target.
 
 ---
 
 ## Key Features 🚀
 
-- **Mac Menu Bar Widget:** Resides directly in the top status bar. Left-clicking the icon instantly toggles the compact window; right-clicking opens a context menu.
-- **Minimal macOS Aesthetic:** Designed using modern glassmorphism, responsive status pulsing, and Outfit/Inter typefaces matching native Apple utility tools.
-- **Multi-Account Quota Tracking:** Add and track multiple Claude accounts (e.g., *Personal*, *Work*, *Enterprise*) with custom labels.
-- **Inline Account Editing:** Update an account's label or rotate its expired `sessionKey` directly from the settings list — no need to remove and re-add. Changing the key automatically re-validates the account against Anthropic.
-- **Configurable Auto-Refresh:** Choose how often quotas sync in the background (every 5, 10, 15, 30, or 60 minutes) from the settings panel. Quotas also refresh instantly whenever you open the widget.
-- **Usage Alerts:** Get a native macOS notification the first time an account's 5-hour session crosses a threshold you pick (50%–95%), or switch alerts **Off** entirely. Each account alerts once per session window and re-arms automatically after the session resets.
-- **Live Syncing & Isolation:** Connects directly to Anthropic's private web endpoints. Accounts are updated concurrently; if a key expires or fails, the widget isolates the warning to that card without affecting other active accounts.
-- **Privacy First:** Your Claude session cookies are stored purely locally in your home directory profile under `~/.claude/tracker-settings.json` and are transmitted directly to Anthropic's endpoints.
-- **Retina-ready Tray Templates:** Employs pre-scaled monochrome status bar icons (`tray-iconTemplate.png` and `tray-iconTemplate@2x.png`) that automatically adapt to light and dark macOS menu bars.
+- **Mac Menu Bar Widget:** Lives in the status bar. Left-click the icon to toggle the compact window; right-click for a Show / Hide / Quit menu. On macOS the Dock icon shows/hides in sync with the window.
+- **日本語対応 (Bilingual UI):** Automatically follows your system language (Japanese/English) and can be switched manually from Settings → Language. Your choice is saved.
+- **Multi-Account Quota Tracking:** Add and track multiple Claude accounts (e.g. *Personal*, *Work*, *Enterprise*) with custom labels.
+- **Inline Account Editing:** Update a label or rotate an expired `sessionKey` directly from the settings list — changing the key automatically re-validates the account.
+- **Configurable Auto-Refresh:** Choose a background sync interval (5/10/15/30/60 min). Quotas also refresh instantly whenever you open the widget, and when the local Claude CLI data changes.
+- **Usage Alerts:** Get a native notification the first time a 5-hour session crosses a threshold you pick (50%–95%), or turn alerts **Off**. Each account alerts once per session window and re-arms after the session resets.
+- **Live Syncing & Isolation:** The Rust backend talks directly to Anthropic's private web endpoints (no browser CORS limits). Accounts are fetched concurrently; an expired/failed key is isolated to its own card without affecting the others.
+- **Privacy First:** Session cookies are stored locally in `~/.claude/tracker-settings.json` and are transmitted only to Claude.ai.
 
 ---
 
@@ -35,77 +37,84 @@ To sync live usage metrics, you'll need the `sessionKey` cookie value for each a
 1. Open your browser and log into [claude.ai](https://claude.ai).
 2. Right-click on the page and select **Inspect** to open Developer Tools.
 3. Head to the **Application** tab (Chrome/Safari) or the **Storage** tab (Firefox).
-4. Expand **Cookies** in the left sidebar menu and click `https://claude.ai`.
+4. Expand **Cookies** in the left sidebar and click `https://claude.ai`.
 5. Find the row named `sessionKey` and copy its entire value (starting with `sk-ant-sid02-...`).
 6. Click the gear icon `[⚙]` in the widget header, type a label (e.g. *Personal*), paste the key, and click **Add Account**.
 
-> **Key expired?** `sessionKey` cookies are rotated periodically by Anthropic. When an account shows a *Sync Failed* warning, open the settings panel, click **Edit** on that account, and paste a fresh key — there's no need to remove and re-add it.
+> **Key expired?** `sessionKey` cookies are rotated periodically by Anthropic. When an account shows a *Sync Failed* warning, open Settings, click **Edit** on that account, and paste a fresh key.
 
 ---
 
 ## Installation & Setup 🛠️
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- npm
+- **[Bun](https://bun.sh)** (package manager + script runner)
+- **[Rust](https://rustup.rs)** (stable toolchain — required by Tauri)
+- **macOS:** Xcode Command Line Tools (`xcode-select --install`)
+- Linux/Windows: see the [Tauri prerequisites](https://tauri.app/start/prerequisites/)
 
 ### 1. Install Dependencies
-Clone this repository to your local machine, open your terminal in the directory, and run:
 ```bash
-npm install
+bun install
 ```
 
-### 2. Start the App Locally
-To launch the widget instantly in development mode:
+### 2. Run in Development
 ```bash
-npm start
+bun run dev
 ```
-The app will initialize and mount the monochrome burst icon in your status bar. You can close the window, and it will run in the background (the Dock icon automatically hides when minimized to status bar).
+This starts the Vite dev server and launches the Tauri window, mounting the monochrome burst icon in your status bar. Closing the window keeps the app running in the menu bar (on macOS the Dock icon hides automatically).
 
 ---
 
 ## Compiling Distribution Packages 📦
 
-You can build standalone, optimized native binaries (`.app` and `.dmg`) that run natively on Apple Silicon and Intel-based Macs using `electron-builder`:
-
-Run the compiler:
+Build an optimized native bundle (`.app` and `.dmg`):
 ```bash
-npm run dist
+bun run build
 ```
+Output lands in `src-tauri/target/release/bundle/`.
 
-Upon successful compilation, check your local `dist/` directory for:
-- **`dist/Claude Quota Widget-1.0.0-arm64.dmg`**: Drag-and-drop installer window.
-- **`dist/Claude Quota Widget-1.0.0-arm64-mac.zip`**: Standard compressed macOS application bundle.
-
-*Note: Since the bundle is built locally without an official paid Apple Developer certificate, macOS Gatekeeper might show a verification warning. To bypass this on first run, Right-Click the `.app` bundle, select **Open**, and click **Open anyway** in the dialog.*
+*Note: Built locally without a paid Apple Developer certificate, macOS Gatekeeper may show a verification warning. On first run, right-click the `.app`, select **Open**, then **Open anyway**.*
 
 ---
 
 ## File Structure 📂
 
 ```
-claude-tracker/
-├── assets/
-│   ├── app-icon.svg             # Cropped high-res master vector icon
-│   ├── icon.icns                # Multi-resolution macOS bundle icon
-│   ├── icon.png                 # Standard 1024x1024 application image
-│   ├── tray-iconTemplate.svg    # Vector template icon for status bar
-│   ├── tray-iconTemplate.png    # Pre-rasterized 18x18 template image
-│   └── tray-iconTemplate@2x.png # Pre-rasterized 36x36 Retina template image
-├── src/
-│   ├── index.html               # Main dashboard & settings HTML pane
-│   ├── styles.css               # Premium macOS Glassmorphism styles
-│   └── renderer.js              # Account states, API requests, & card rendering
-├── main.js                      # Electron main background process & Tray handlers
-├── preload.js                   # Secure IPC renderer bridge
-├── package.json                 # Project dependencies & build metadata
-└── README.md                    # Project documentation
+claude-quota-widget/
+├── index.html                   # Vite entry (mounts the Svelte app)
+├── package.json                 # Bun scripts & frontend deps
+├── vite.config.ts / svelte.config.js / tsconfig.json
+├── src/                         # Frontend (Svelte + TypeScript)
+│   ├── main.ts                  # App mount
+│   ├── App.svelte               # Root: dashboard/settings + tray drag area
+│   ├── app.css                  # macOS glassmorphism styles
+│   ├── components/              # Header, Dashboard, AccountCard, Settings, …
+│   └── lib/
+│       ├── api.ts               # invoke()/listen() wrappers (replaces preload)
+│       ├── stores.ts            # accounts/settings/status stores + actions
+│       ├── quota.ts             # snake/camel normalization + time formatting
+│       ├── i18n.ts              # locale store + t() translator
+│       └── locales/{en,ja}.ts   # string dictionaries
+├── src-tauri/                   # Rust backend
+│   ├── Cargo.toml / tauri.conf.json
+│   ├── capabilities/default.json
+│   ├── icons/                   # app + tray template icons
+│   └── src/
+│       ├── main.rs / lib.rs     # entry + builder wiring
+│       ├── commands.rs          # #[tauri::command] handlers (ApiResult)
+│       ├── quota.rs             # claude.ai usage fetch (reqwest)
+│       ├── settings.rs          # tracker-settings.json I/O
+│       ├── watcher.rs           # debounced fs watch → "data-changed"
+│       ├── tray.rs              # menu-bar tray + menu
+│       └── window.rs            # show/hide + macOS Dock activation policy
+└── README.md
 ```
 
 ---
 
 ## Security & Privacy 🔒
 
-- All requests are initiated **directly** from your local machine to `claude.ai` endpoints.
-- No central server, tracking services, or intermediate proxy servers are used.
-- Keys are saved locally using standard JSON formatting in your home directory profile under `~/.claude/tracker-settings.json`.
+- All requests are initiated **directly** from your local machine to `claude.ai` endpoints (made by the Rust backend).
+- No central server, tracking, or proxy is used.
+- Keys are saved locally as JSON in `~/.claude/tracker-settings.json`. They are stored in plaintext, so keep your machine secure.

@@ -1,48 +1,29 @@
 {
   "name": "claude-quota-widget",
-  "version": "1.0.0",
-  "description": "A beautiful macOS desktop quota widget for Claude",
-  "main": "main.js",
+  "version": "2.0.0",
+  "description": "A macOS menu-bar quota widget for Claude.ai, built with Tauri 2.0 + Svelte",
+  "type": "module",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder"
+    "dev:vite": "vite",
+    "build:vite": "vite build",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "tauri": "tauri"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "marked": "^12.0.0"
+    "@tauri-apps/api": "^2.1.1"
   },
   "devDependencies": {
-    "electron": "^31.0.0",
-    "electron-builder": "^26.15.3"
-  },
-  "build": {
-    "appId": "com.arnob.claudequotawidget",
-    "productName": "Claude Quota Widget",
-    "mac": {
-      "category": "public.app-category.developer-tools",
-      "icon": "assets/icon.icns",
-      "target": [
-        "dmg",
-        "zip"
-      ]
-    },
-    "dmg": {
-      "title": "Install Claude Quota Widget",
-      "contents": [
-        {
-          "x": 130,
-          "y": 150,
-          "type": "file"
-        },
-        {
-          "x": 360,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    }
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tauri-apps/cli": "^2.2.7",
+    "@types/node": "^26.0.1",
+    "svelte": "^5.19.0",
+    "svelte-check": "^4.1.4",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11"
   }
 }

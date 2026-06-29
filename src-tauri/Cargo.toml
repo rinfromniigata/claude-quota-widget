@@ -1,0 +1,32 @@
+[package]
+name = "claude-quota-widget"
+version = "2.0.0"
+description = "Claude.ai quota menu-bar widget"
+authors = ["aminurislamarnob"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "claude_quota_widget_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-notification = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json", "gzip"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+notify = "6"
+notify-debouncer-mini = "0.4"
+dirs = "5"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
