@@ -16,6 +16,7 @@ pub fn run() {
             commands::save_tracker_settings,
             commands::fetch_live_limits,
             commands::notify,
+            commands::set_tray_title,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

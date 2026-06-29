@@ -37,6 +37,11 @@ export function getSessionUtilization(q: QuotaData): number {
   return getUtilization(getFiveHour(q));
 }
 
+// Current 7-day utilization (%) — used for the weekly bar and tray text.
+export function getWeeklyUtilization(q: QuotaData): number {
+  return getUtilization(getSevenDay(q));
+}
+
 // Progress-bar severity class shared by both quota bars.
 export function barClass(pct: number, base = ""): string {
   if (pct >= 95) return "danger";

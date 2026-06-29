@@ -31,6 +31,11 @@ export function notify(title: string, body: string): Promise<ApiResult<null>> {
   return invoke("notify", { title, body });
 }
 
+// Update the menu-bar status text next to the tray icon (empty string clears it).
+export function setTrayTitle(title: string): Promise<ApiResult<null>> {
+  return invoke("set_tray_title", { title });
+}
+
 // --- Event subscriptions (replaces onDataChanged / onWindowShown) ---
 
 export function onDataChanged(cb: () => void): Promise<UnlistenFn> {
