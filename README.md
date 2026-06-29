@@ -1,120 +1,120 @@
 # Claude Quota Widget 📊
 
-A lightweight, modern macOS menu-bar widget built with **Tauri 2.0 + Svelte**. It lives in your macOS status bar and lets you monitor rolling 5-hour session limits and weekly utilization quotas across multiple Anthropic **Claude.ai** accounts simultaneously. **Japanese / English bilingual UI** included.
+**Tauri 2.0 + Svelte** で構築された、軽量でモダンな macOS メニューバーウィジェット。macOS ステータスバーに常駐し、複数の Anthropic **Claude.ai** アカウントのローリング 5 時間セッション制限と週間利用クォータをリアルタイムで監視できます。**日本語 / 英語バイリンガル UI** に対応。
 
 ![Platform](https://img.shields.io/badge/Platform-macOS-orange?style=flat-square&logo=apple)
 ![Tauri](https://img.shields.io/badge/Tauri-2.0-24C8DB?style=flat-square&logo=tauri)
 ![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?style=flat-square&logo=svelte)
 ![Bun](https://img.shields.io/badge/Bun-runtime-000000?style=flat-square&logo=bun)
 
-> **v2.0 rewrite:** Previously an Electron app, now rebuilt on a Rust (Tauri) backend with a Svelte frontend, packaged/run with Bun. The result is a much smaller, faster native binary. Cross-platform builds (Windows/Linux) are in scope; macOS is the primary, fully supported target.
+> **v2.1 update:** v2.0 では Electron から Rust（Tauri）バックエンド + Svelte フロントエンドに全面リビルド。Bun でパッケージ化・実行され、より小さく、より高速なネイティブバイナリを実現。クロスプラットフォーム対応（Windows/Linux）は検討中で、macOS が主要でフル対応されたターゲット。
 
 ---
 
-## Key Features 🚀
+## 主な機能 🚀
 
-- **Mac Menu Bar Widget:** Lives in the status bar. Left-click the icon to toggle the compact window; right-click for a Show / Hide / Quit menu. On macOS the Dock icon shows/hides in sync with the window.
-- **日本語対応 (Bilingual UI):** Automatically follows your system language (Japanese/English) and can be switched manually from Settings → Language. Your choice is saved.
-- **Multi-Account Quota Tracking:** Add and track multiple Claude accounts (e.g. *Personal*, *Work*, *Enterprise*) with custom labels.
-- **Inline Account Editing:** Update a label or rotate an expired `sessionKey` directly from the settings list — changing the key automatically re-validates the account.
-- **Configurable Auto-Refresh:** Choose a background sync interval (5/10/15/30/60 min). Quotas also refresh instantly whenever you open the widget, and when the local Claude CLI data changes.
-- **Usage Alerts:** Get a native notification the first time a 5-hour session crosses a threshold you pick (50%–95%), or turn alerts **Off**. Each account alerts once per session window and re-arms after the session resets.
-- **Live Syncing & Isolation:** The Rust backend talks directly to Anthropic's private web endpoints (no browser CORS limits). Accounts are fetched concurrently; an expired/failed key is isolated to its own card without affecting the others.
-- **Privacy First:** Session cookies are stored locally in `~/.claude/tracker-settings.json` and are transmitted only to Claude.ai.
+- **Mac メニューバーウィジェット:** ステータスバーに常駐。アイコンを左クリックで次のコンパクトウィンドウをトグル、右クリックで表示 / 非表示 / 終了メニュー。macOS では Dock アイコンがウィンドウの表示・非表示に同期。
+- **日本語・英語対応 (バイリンガル UI):** システム言語（日本語 / 英語）に自動対応し、設定から手動で言語を切り替え可能。選択は保存されます。
+- **マルチアカウント対応:** 複数の Claude アカウント（例：*個人*、*仕事*、*企業*）をカスタムラベルで追加・管理。
+- **インライン編集:** ラベルの更新や期限切れ `sessionKey` のローテーションを設定リストから直接実行。キーを変更すると自動的にアカウント検証が行われます。
+- **自動更新間隔設定:** バックグラウンド同期間隔を選択可能（5/10/15/30/60 分）。ウィジェットを開いた時と Claude CLI データの変更時は即座に更新。
+- **利用アラート:** 5 時間セッションが指定した閾値（50% ～ 95%）に達すると、ネイティブ通知を送信。アラートはオフにも設定可。各アカウントはセッションごとに 1 回アラートし、セッションリセット後に再度有効化。
+- **ライブシンク & アカウント隔離:** Rust バックエンドが Anthropic のプライベート Web エンドポイントに直接通信（ブラウザ CORS 制限なし）。アカウントは並列で取得され、期限切れ / 失敗したキーは他のアカウントに影響を与えずに隔離。
+- **プライバシー第一:** セッションキーは `~/.claude/tracker-settings.json` にローカル保存され、Claude.ai にのみ送信されます。
 
 ---
 
-## App Interface Preview 📱
+## アプリインターフェース プレビュー 📱
 
 ![Claude Quota Widget Preview](assets/preview.png)
 
 ---
 
-## How to Get Your `sessionKey` 🔑
+## `sessionKey` の取得方法 🔑
 
-To sync live usage metrics, you'll need the `sessionKey` cookie value for each account:
+ライブ利用状況メトリクスを同期するには、各アカウントの `sessionKey` クッキー値が必要です：
 
-1. Open your browser and log into [claude.ai](https://claude.ai).
-2. Right-click on the page and select **Inspect** to open Developer Tools.
-3. Head to the **Application** tab (Chrome/Safari) or the **Storage** tab (Firefox).
-4. Expand **Cookies** in the left sidebar and click `https://claude.ai`.
-5. Find the row named `sessionKey` and copy its entire value (starting with `sk-ant-sid02-...`).
-6. Click the gear icon `[⚙]` in the widget header, type a label (e.g. *Personal*), paste the key, and click **Add Account**.
+1. ブラウザを開き [claude.ai](https://claude.ai) にログイン。
+2. ページ上で右クリックして **検査**（または **Inspect**）を選択し、開発者ツールを開く。
+3. **Application**（Chrome / Safari）または **Storage**（Firefox）タブに移動。
+4. 左サイドバーの **Cookies** を展開し、`https://claude.ai` をクリック。
+5. `sessionKey` という行を見つけ、値全体をコピー（`sk-ant-sid02-...` で始まります）。
+6. ウィジェットヘッダの歯車アイコン `[⚙]` をクリック、ラベル（例：*個人*）を入力、キーを貼り付け、**Add Account**（アカウント追加）をクリック。
 
-> **Key expired?** `sessionKey` cookies are rotated periodically by Anthropic. When an account shows a *Sync Failed* warning, open Settings, click **Edit** on that account, and paste a fresh key.
+> **キーが期限切れ？** `sessionKey` クッキーは Anthropic によって定期的にローテーションされます。アカウントが *Sync Failed*（同期失敗）警告を表示する場合、設定を開き、そのアカウントの **Edit**（編集）をクリックして新しいキーを貼り付けてください。
 
 ---
 
-## Installation & Setup 🛠️
+## インストール & セットアップ 🛠️
 
-### Prerequisites
-- **[Bun](https://bun.sh)** (package manager + script runner)
-- **[Rust](https://rustup.rs)** (stable toolchain — required by Tauri)
+### 前提条件
+- **[Bun](https://bun.sh)** (パッケージマネージャー + スクリプトランナー)
+- **[Rust](https://rustup.rs)** (安定版ツールチェーン — Tauri で必須)
 - **macOS:** Xcode Command Line Tools (`xcode-select --install`)
-- Linux/Windows: see the [Tauri prerequisites](https://tauri.app/start/prerequisites/)
+- Linux/Windows: [Tauri の前提条件](https://tauri.app/start/prerequisites/)を参照
 
-### 1. Install Dependencies
+### 1. 依存関係のインストール
 ```bash
 bun install
 ```
 
-### 2. Run in Development
+### 2. 開発モードで実行
 ```bash
 bun run dev
 ```
-This starts the Vite dev server and launches the Tauri window, mounting the monochrome burst icon in your status bar. Closing the window keeps the app running in the menu bar (on macOS the Dock icon hides automatically).
+Vite 開発サーバーを起動し、Tauri ウィンドウを立ち上げます。モノクロバーストアイコンがステータスバーにマウントされます。ウィンドウを閉じてもアプリはメニューバーで実行継続（macOS では Dock アイコンが自動的に非表示）。
 
 ---
 
-## Compiling Distribution Packages 📦
+## 配布用パッケージのビルド 📦
 
-Build an optimized native bundle (`.app` and `.dmg`):
+最適化されたネイティブバンドル（`.app` と `.dmg`）をビルド：
 ```bash
 bun run build
 ```
-Output lands in `src-tauri/target/release/bundle/`.
+出力は `src-tauri/target/release/bundle/` に生成されます。
 
-*Note: Built locally without a paid Apple Developer certificate, macOS Gatekeeper may show a verification warning. On first run, right-click the `.app`, select **Open**, then **Open anyway**.*
+*注：有料の Apple Developer 証明書なしでローカルビルドした場合、macOS Gatekeeper が検証警告を表示することがあります。初回実行時は `.app` を右クリックして**開く**を選択し、その後**開く**をクリックしてください。*
 
 ---
 
-## File Structure 📂
+## ファイル構成 📂
 
 ```
 claude-quota-widget/
-├── index.html                   # Vite entry (mounts the Svelte app)
-├── package.json                 # Bun scripts & frontend deps
+├── index.html                   # Vite エントリーポイント（Svelte アプリをマウント）
+├── package.json                 # Bun スクリプト & フロントエンド依存
 ├── vite.config.ts / svelte.config.js / tsconfig.json
-├── src/                         # Frontend (Svelte + TypeScript)
-│   ├── main.ts                  # App mount
-│   ├── App.svelte               # Root: dashboard/settings + tray drag area
-│   ├── app.css                  # macOS glassmorphism styles
+├── src/                         # フロントエンド（Svelte + TypeScript）
+│   ├── main.ts                  # アプリマウント
+│   ├── App.svelte               # ルート：ダッシュボード/設定 + トレイドラッグエリア
+│   ├── app.css                  # macOS グラスモーフィズムスタイル
 │   ├── components/              # Header, Dashboard, AccountCard, Settings, …
 │   └── lib/
-│       ├── api.ts               # invoke()/listen() wrappers (replaces preload)
-│       ├── stores.ts            # accounts/settings/status stores + actions
-│       ├── quota.ts             # snake/camel normalization + time formatting
-│       ├── i18n.ts              # locale store + t() translator
-│       └── locales/{en,ja}.ts   # string dictionaries
-├── src-tauri/                   # Rust backend
+│       ├── api.ts               # invoke()/listen() ラッパー（preload に代替）
+│       ├── stores.ts            # accounts/settings/status ストア + アクション
+│       ├── quota.ts             # スネークケース/キャメルケース正規化 + 時間フォーマット
+│       ├── i18n.ts              # ロケールストア + t() 翻訳機
+│       └── locales/{en,ja}.ts   # 文字列辞書
+├── src-tauri/                   # Rust バックエンド
 │   ├── Cargo.toml / tauri.conf.json
 │   ├── capabilities/default.json
-│   ├── icons/                   # app + tray template icons
+│   ├── icons/                   # アプリ + トレイテンプレートアイコン
 │   └── src/
-│       ├── main.rs / lib.rs     # entry + builder wiring
-│       ├── commands.rs          # #[tauri::command] handlers (ApiResult)
-│       ├── quota.rs             # claude.ai usage fetch (reqwest)
+│       ├── main.rs / lib.rs     # エントリー + ビルダー配線
+│       ├── commands.rs          # #[tauri::command] ハンドラー（ApiResult）
+│       ├── quota.rs             # claude.ai 利用状況取得（reqwest）
 │       ├── settings.rs          # tracker-settings.json I/O
-│       ├── watcher.rs           # debounced fs watch → "data-changed"
-│       ├── tray.rs              # menu-bar tray + menu
-│       └── window.rs            # show/hide + macOS Dock activation policy
+│       ├── watcher.rs           # デバウンス fs watch → "data-changed"
+│       ├── tray.rs              # メニューバー トレイ + メニュー
+│       └── window.rs            # 表示/非表示 + macOS Dock アクティベーション ポリシー
 └── README.md
 ```
 
 ---
 
-## Security & Privacy 🔒
+## セキュリティ & プライバシー 🔒
 
-- All requests are initiated **directly** from your local machine to `claude.ai` endpoints (made by the Rust backend).
-- No central server, tracking, or proxy is used.
-- Keys are saved locally as JSON in `~/.claude/tracker-settings.json`. They are stored in plaintext, so keep your machine secure.
+- すべてのリクエストはローカルマシンから **直接** `claude.ai` エンドポイントに送信されます（Rust バックエンドが実行）。
+- 中央サーバー、トラッキング、プロキシは使用されません。
+- キーは `~/.claude/tracker-settings.json` にローカル JSON として保存されます。プレーンテキストで保存されるため、マシンのセキュリティを維持してください。
