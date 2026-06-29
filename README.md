@@ -47,32 +47,42 @@
 
 ## インストール & セットアップ 🛠️
 
-### 前提条件
+### 最も簡単な方法：リリース版をダウンロード
+
+GitHub の [最新リリース](https://github.com/ofuchirin/claude-quota-widget/releases) から、あなたのシステムに合わせたアプリをダウンロードしてください：
+
+- **macOS (Apple Silicon + Intel Universal):** `Claude.Quota.Widget_*.dmg`
+- **Windows (x64):** `Claude.Quota.Widget_*.exe`
+
+`.dmg` をダウンロードしたら、ファイルをダブルクリック → Applications フォルダにドラッグ &ドロップ。
+`.exe` をダウンロードしたら、インストーラーを実行してインストール完了。
+
+---
+
+### ローカルで開発・ビルドする場合
+
+#### 前提条件
 - **[Bun](https://bun.sh)** (パッケージマネージャー + スクリプトランナー)
 - **[Rust](https://rustup.rs)** (安定版ツールチェーン — Tauri で必須)
 - **macOS:** Xcode Command Line Tools (`xcode-select --install`)
 - Linux/Windows: [Tauri の前提条件](https://tauri.app/start/prerequisites/)を参照
 
-### 1. 依存関係のインストール
+#### 1. 依存関係のインストール
 ```bash
 bun install
 ```
 
-### 2. 開発モードで実行
+#### 2. 開発モードで実行
 ```bash
 bun run dev
 ```
 Vite 開発サーバーを起動し、Tauri ウィンドウを立ち上げます。モノクロバーストアイコンがステータスバーにマウントされます。ウィンドウを閉じてもアプリはメニューバーで実行継続（macOS では Dock アイコンが自動的に非表示）。
 
----
-
-## 配布用パッケージのビルド 📦
-
-最適化されたネイティブバンドル（`.app` と `.dmg`）をビルド：
+#### 3. ローカルでビルド
 ```bash
 bun run build
 ```
-出力は `src-tauri/target/release/bundle/` に生成されます。
+最適化されたネイティブバンドル（`.app` と `.dmg`/`.exe`）を生成します。出力は `src-tauri/target/release/bundle/` に生成されます。
 
 *注：有料の Apple Developer 証明書なしでローカルビルドした場合、macOS Gatekeeper が検証警告を表示することがあります。初回実行時は `.app` を右クリックして**開く**を選択し、その後**開く**をクリックしてください。*
 
