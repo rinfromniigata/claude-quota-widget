@@ -7,3 +7,5 @@ out/
 .claude
 .gemini
 package-lock.json
+
+roadmap/
