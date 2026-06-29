@@ -27,7 +27,7 @@ export interface Settings {
   language: LangSetting;
 }
 
-export const DEFAULT_REFRESH_MINUTES = 15;
+export const DEFAULT_REFRESH_MINUTES = 1;
 export const DEFAULT_ALERT_THRESHOLD = 80;
 
 export const accounts = writable<Account[]>([]);

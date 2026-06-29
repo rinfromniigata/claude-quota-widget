@@ -12,7 +12,7 @@
 
   let { onAdded }: { onAdded: () => void } = $props();
 
-  const REFRESH_OPTIONS = [5, 10, 15, 30, 60];
+  const REFRESH_OPTIONS = [1, 5, 10, 15, 30, 60];
   const THRESHOLD_OPTIONS = [0, 50, 60, 70, 75, 80, 85, 90, 95];
 
   function onRefreshChange(e: Event) {
