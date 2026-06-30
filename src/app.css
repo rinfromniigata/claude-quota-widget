@@ -44,36 +44,12 @@ body {
   user-select: none;
 }
 
-/* --- Window Titlebar (macOS HiddenInset Drag Area) --- */
-.window-titlebar {
-  height: 38px;
-  background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  -webkit-app-region: drag;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100;
-}
-
-.window-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-dimmed);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
 /* --- Widget Layout --- */
 .widget-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  padding-top: 38px; /* Offset for macOS titlebar */
   background-color: var(--bg-color);
 }
 

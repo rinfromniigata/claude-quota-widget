@@ -22,10 +22,6 @@
   });
 </script>
 
-<div class="window-titlebar" data-tauri-drag-region>
-  <div class="window-title">{$t("app.name")}</div>
-</div>
-
 <div class="widget-layout">
   <Header
     {activeView}

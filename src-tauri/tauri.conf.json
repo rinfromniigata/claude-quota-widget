@@ -13,15 +13,13 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "Claude Quota Widget",
+        "title": "Claude クォータウィジェット",
         "label": "main",
         "width": 520,
         "height": 680,
         "minWidth": 420,
         "minHeight": 500,
         "resizable": true,
-        "titleBarStyle": "Overlay",
-        "hiddenTitle": true,
         "visible": true
       }
     ],
