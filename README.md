@@ -34,9 +34,7 @@ macOS メニューバー / Windows システムトレイに常駐し、Anthropic
 
 ## アプリインターフェース プレビュー
 
-![Claude Quota Widget window](assets/window.png)
-
-![Claude Quota Widget widget](assets/widget.png)
+![Claude Quota Widget preview](assets/windowandwidget.png)
 
 ---
 
