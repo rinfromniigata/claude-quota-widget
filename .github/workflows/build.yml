@@ -25,18 +25,18 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Build with Tauri (Universal)
+      - name: Build with Tauri (x86_64)
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tauriScript: bunx tauri
-          args: --target universal
+          args: --target x86_64-apple-darwin
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: macos-universal
+          name: macos-x64
           path: |
             src-tauri/target/release/bundle/dmg/
             src-tauri/target/release/bundle/app/

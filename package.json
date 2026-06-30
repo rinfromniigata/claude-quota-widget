@@ -1,6 +1,6 @@
 {
   "name": "claude-quota-widget",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A macOS menu-bar quota widget for Claude.ai, built with Tauri 2.0 + Svelte",
   "type": "module",
   "scripts": {
