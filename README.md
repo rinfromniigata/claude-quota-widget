@@ -61,11 +61,11 @@ macOS メニューバー / Windows システムトレイに常駐し、Anthropic
 
 GitHub の [最新リリース](https://github.com/rinfromniigata/claude-quota-widget/releases) から、あなたのシステムに合わせたアプリをダウンロードしてください：
 
-- **macOS:** `Claude.Quota.Widget_*.dmg`
-- **Windows:** `Claude.Quota.Widget_*.exe`
+- **macOS:** `Claude.Quota.Widget_(ver)_(arch).dmg`
+- **Windows:** `Claude.Quota.Widget_(ver)_(arch).zip`
 
 `.dmg` をダウンロードしたら、ファイルをダブルクリック → Applications フォルダにドラッグ &ドロップ。
-`.exe` をダウンロードしたら、インストーラーを実行してインストール完了。
+`.zip` をダウンロードしたら、ファイルを展開 → 中にあるインストーラーを実行してインストール完了。
 
 > **初回起動時/インストール時に警告が表示される?**  
 > プラットフォーマーが提供する有効な証明書無しでビルドしているため、macOS Gatekeeper または Windows Defender SmartScreen が検証警告を表示します。  
