@@ -7,7 +7,7 @@
     "dev:vite": "vite",
     "build:vite": "vite build",
     "dev": "tauri dev",
-    "build": "tauri build",
+    "build": "tauri build --target x86_64-apple-darwin",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "tauri": "tauri"
   },
