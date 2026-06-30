@@ -61,8 +61,8 @@ macOS メニューバー / Windows システムトレイに常駐し、Anthropic
 
 GitHub の [最新リリース](https://github.com/rinfromniigata/claude-quota-widget/releases) から、あなたのシステムに合わせたアプリをダウンロードしてください：
 
-- **macOS (Apple Silicon + Intel Universal):** `Claude.Quota.Widget_*.dmg`
-- **Windows (x64):** `Claude.Quota.Widget_*.exe`
+- **macOS:** `Claude.Quota.Widget_*.dmg`
+- **Windows:** `Claude.Quota.Widget_*.exe`
 
 `.dmg` をダウンロードしたら、ファイルをダブルクリック → Applications フォルダにドラッグ &ドロップ。
 `.exe` をダウンロードしたら、インストーラーを実行してインストール完了。
@@ -72,10 +72,11 @@ GitHub の [最新リリース](https://github.com/rinfromniigata/claude-quota-w
 > macOSで開くときは、右クリックして**開く**を選択し、その後**開く**をクリックしてください。
 > Windowsにインストールするときは、警告画面の**詳細情報**をクリックし、その後**実行**をクリックしてください。
 
-> **Windows aarch64が無い?**  
+> **aarch64が無い?**  
 > 私の手元に検証環境が無いのでリリースしていません。
-> Windows11に内蔵されたPrism互換レイヤーで動く気がしますが確認はしていません。  
-> BunはWindows aarch64用バイナリをリリースしていますので、当該環境を持っている人はローカルでビルドしてください。
+> macOS aarch64 (Apple Silicon) は Rosetta2 により Intel 専用パッケージをトランスパイルして実行できます。
+> Windows11 aarch64 に内蔵されたPrism互換レイヤーで動くと思いますが確認はしていません。  
+> Bun は aarch64用バイナリをリリースしていますので、当該環境を持っている人はローカルでビルドしてください。
 
 ---
 
